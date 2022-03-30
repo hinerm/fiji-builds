@@ -14,15 +14,30 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Check for update site changes
+        run: |
+          # CTR START HERE - This is wrong.
+          # Think carefully about how to generate dates.txt
+          # for *the most recent Fiji bundle*, not for
+          # *the most recent update site changes*.
+          # Could we use Last-Modified of downloads.imagej.net/fiji/latest ?
+          ./fetch-datestamps.sh > dates.txt
+
+      - name: Preconfigure the cache
+        run: |
+          mkdir -p ~/cache
+
+      - name: Print variables before
+        run: ./print-vars.sh
+
       - name: Configure the cache
         uses: actions/cache@v2
-        env:
-          cache-name: cache
         with:
           path: ~/cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('~/cache/dates.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
+          key: ${{ runner.os }}-${{ hashFiles('dates.txt') }}
+
+      - name: Print variables after
+        run: ./print-vars.sh
 
       - name: Execute the build
         run: ./build.sh
